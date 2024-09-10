@@ -14,6 +14,7 @@ xcodebuild build-for-testing \
   -project "${APP_PATH}.xcodeproj" \
   -scheme Benchmark \
   -destination platform="iOS" \
+  -sdk iphoneos \
   -allowProvisioningUpdates \
   DEVELOPMENT_TEAM=78E7V7QP35 \
   CODE_SIGN_STYLE=Manual \
@@ -28,7 +29,8 @@ BUILD_DIR=$(xcodebuild -showBuildSettings -project "$APP_PATH.xcodeproj" -json |
 # Prepare the demo app, debug mode here is the default from xcodebuild and match
 # with what we have in the test spec
 MODE="Release"
-pushd "${BUILD_DIR}/${MODE}"
+PLATFORM="iphoneos"
+pushd "${BUILD_DIR}/${MODE}-${PLATFORM}"
 
 rm -rf Payload && mkdir Payload
 APP_NAME=Benchmark
