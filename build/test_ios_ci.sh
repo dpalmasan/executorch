@@ -75,7 +75,6 @@ xcodebuild build-for-testing \
   -project "$APP_PATH.xcodeproj" \
   -scheme MobileNetClassifierTest \
   -destination platform="iOS" \
-  -configuration Release \
   -allowProvisioningUpdates \
   DEVELOPMENT_TEAM=78E7V7QP35 \
   CODE_SIGN_STYLE=Manual \
@@ -86,7 +85,7 @@ xcodebuild build-for-testing \
 BUILD_DIR=$(xcodebuild -showBuildSettings -project "$APP_PATH.xcodeproj" -json | jq -r ".[0].buildSettings.BUILD_DIR")
 
 # Prepare the demo app
-MODE="Release"
+MODE="Debug"
 PLATFORM="iphoneos"
 pushd "${BUILD_DIR}/${MODE}-${PLATFORM}"
 
