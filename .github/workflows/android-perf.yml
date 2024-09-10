@@ -178,6 +178,7 @@ jobs:
   upload-models:
     needs: export-models
     runs-on: linux.2xlarge
+    if: always()  # Continue this job regardless of previous job outcome
     steps:
       - name: Download the models from GitHub
         uses: actions/download-artifact@v3
@@ -186,14 +187,25 @@ jobs:
           name: android-models
           path: ${{ runner.temp }}/artifacts/
 
-      - name: Verify the models
+      - name: Verify models
+        id: verify-models
         shell: bash
         working-directory: ${{ runner.temp }}/artifacts/
         run: |
           ls -lah ./
 
+          # Check if the directory contains any model
+          if [ -z "$(ls -A .)" ]; then
+            echo "No models found."
+            echo "::set-output name=models-found::false"
+          else
+            echo "Models found."
+            echo "::set-output name=models-found::true"
+          fi
+
       - name: Upload the models to S3
         uses: seemethere/upload-artifact-s3@v5
+        if: steps.verify-models.outputs.models-found == 'true'  # Upload only if models were found
         with:
           s3-bucket: gha-artifacts
           s3-prefix: |
