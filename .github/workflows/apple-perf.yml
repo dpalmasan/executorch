@@ -269,6 +269,11 @@ jobs:
         ) done
         echo "::endgroup::"
 
+        # NB: Although exported models can be copied to this directory and bundled together with the
+        # app, we don't use this in CI and rely on AWS extra data parameter to make the model and the
+        # tokenizer available to the benchmark. This decouples the app and the model. We just need to
+        # create the directory here to pass the build
+        mkdir -p extension/apple/Benchmark/Models
         ${CONDA_RUN} --no-capture-output \
           build/build_apple_llm_demo.sh ${ARTIFACTS_DIR_NAME}
 
