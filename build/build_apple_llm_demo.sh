@@ -28,8 +28,7 @@ BUILD_DIR=$(xcodebuild -showBuildSettings -project "$APP_PATH.xcodeproj" -json |
 # Prepare the demo app, debug mode here is the default from xcodebuild and match
 # with what we have in the test spec
 MODE="Release"
-PLATFORM="iphoneos"
-pushd "${BUILD_DIR}/${MODE}-${PLATFORM}"
+pushd "${BUILD_DIR}/${MODE}"
 
 rm -rf Payload && mkdir Payload
 APP_NAME=Benchmark
