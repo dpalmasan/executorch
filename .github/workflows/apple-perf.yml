@@ -203,8 +203,8 @@ jobs:
           if-no-files-found: ignore
           path: ${{ runner.temp }}/artifacts/
 
-  build-llm-demo:
-    name: build-llm-demo
+  build-benchmark-app:
+    name: build-benchmark-app
     uses: pytorch/test-infra/.github/workflows/macos_job.yml@main
     needs:
       - set-parameters
@@ -277,8 +277,8 @@ jobs:
         ${CONDA_RUN} --no-capture-output \
           build/build_apple_llm_demo.sh ${ARTIFACTS_DIR_NAME}
 
-  upload-ios-apps:
-    needs: build-llm-demo
+  upload-benchmark-app:
+    needs: build-benchmark-app
     runs-on: linux.2xlarge
     steps:
       - name: Download the apps from GitHub
@@ -307,7 +307,7 @@ jobs:
   benchmark-on-device:
     needs:
       - set-parameters
-      - upload-ios-apps
+      - upload-benchmark-app
       - upload-models
     permissions:
       id-token: write
