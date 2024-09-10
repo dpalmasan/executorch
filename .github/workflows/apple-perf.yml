@@ -1,6 +1,8 @@
 name: apple-perf
 
 on:
+  # DEBUG: TO BE REMOVED
+  pull_request:
   schedule:
     - cron: 0 1 * * *
   # Note: GitHub has an upper limit of 10 inputs
@@ -207,16 +209,13 @@ jobs:
     needs:
       - set-parameters
     secrets: inherit
-    strategy:
-      matrix:
-          tokenizer: [bpe]
     with:
       runner: macos-latest-xlarge
       python-version: '3.11'
       submodules: 'true'
       ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
       upload-artifact: ios-apps
-      secrets-env: BUILD_CERTIFICATE_BASE64 BUILD_PROVISION_PROFILE_BASE64 KEYCHAIN_PASSWORD
+      secrets-env: BUILD_CERTIFICATE_BASE64 EXECUTORCH_BENCHMARK_BUILD_PROVISION_PROFILE_BASE64 KEYCHAIN_PASSWORD
       timeout: 90
       script: |
         set -eux
@@ -231,7 +230,7 @@ jobs:
         export ARTIFACTS_DIR_NAME=artifacts-to-be-uploaded
 
         # Setup Apple certificate for iOS development
-        BUILD_PROVISION_PROFILE_BASE64="${SECRET_BUILD_PROVISION_PROFILE_BASE64}" \
+        BUILD_PROVISION_PROFILE_BASE64="${SECRET_EXECUTORCH_BENCHMARK_BUILD_PROVISION_PROFILE_BASE64}" \
         BUILD_CERTIFICATE_BASE64="${SECRET_BUILD_CERTIFICATE_BASE64}" \
         KEYCHAIN_PASSWORD="${SECRET_KEYCHAIN_PASSWORD}" \
         .ci/scripts/setup-ios.sh
@@ -245,8 +244,33 @@ jobs:
           backends/apple/mps/install_requirements.sh
         echo "::endgroup::"
 
+        echo "::group::Build ExecuTorch iOS frameworks"
+        FRAMEWORKS=(
+          "executorch"
+          "backend_coreml"
+          "backend_mps"
+          "backend_xnnpack"
+          "kernels_custom"
+          "kernels_optimized"
+          "kernels_portable"
+          "kernels_quantized"
+        )
+
+        # Build Release iOS Frameworks
+        PYTHON_EXECUTABLE=python ${CONDA_RUN} --no-capture-output \
+          build/build_apple_frameworks.sh --coreml --custom --mps --optimized --portable --quantized --xnnpack
+
+        # DEBUG
+        ls -lah cmake-out
+
+        mkdir -p extension/apple/Benchmark/Frameworks
+        for FRAMEWORK in "${FRAMEWORKS[@]}"; do (
+          cp -r "cmake-out/${FRAMEWORK}.xcframework" extension/apple/Benchmark/Frameworks/
+        ) done
+        echo "::endgroup::"
+
         ${CONDA_RUN} --no-capture-output \
-          build/build_apple_llm_demo.sh ${{ matrix.tokenizer }} ${ARTIFACTS_DIR_NAME}
+          build/build_apple_llm_demo.sh ${ARTIFACTS_DIR_NAME}
 
   upload-ios-apps:
     needs: build-llm-demo

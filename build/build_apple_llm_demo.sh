@@ -7,37 +7,20 @@
 
 set -euo pipefail
 
-TOKENIZER="${1:-bpe}"
-ARTIFACTS_DIR_NAME="$2"
+ARTIFACTS_DIR_NAME="$1"
+APP_PATH="extension/apple/Benchmark/Benchmark"
 
-APP_PATH="examples/demo-apps/apple_ios/LLaMA/LLaMA"
-
-if [[ "${TOKENIZER}" = "bpe" ]]; then
-  xcodebuild build-for-testing \
-    -project "${APP_PATH}.xcodeproj" \
-    -scheme LLaMAPerfBenchmark \
-    -destination platform="iOS" \
-    -allowProvisioningUpdates \
-    DEVELOPMENT_TEAM=78E7V7QP35 \
-    CODE_SIGN_STYLE=Manual \
-    PROVISIONING_PROFILE_SPECIFIER=iLLaMA \
-    CODE_SIGN_IDENTITY="iPhone Distribution" \
-    CODE_SIGNING_REQUIRED=No \
-    CODE_SIGNING_ALLOWED=No \
-    GCC_PREPROCESSOR_DEFINITIONS="DEBUG=1 ET_USE_TIKTOKEN=0"
-else
-  xcodebuild build-for-testing \
-    -project "${APP_PATH}.xcodeproj" \
-    -scheme LLaMAPerfBenchmark \
-    -destination platform="iOS" \
-    -allowProvisioningUpdates \
-    DEVELOPMENT_TEAM=78E7V7QP35 \
-    CODE_SIGN_STYLE=Manual \
-    PROVISIONING_PROFILE_SPECIFIER=iLLaMA \
-    CODE_SIGN_IDENTITY="iPhone Distribution" \
-    CODE_SIGNING_REQUIRED=No \
-    CODE_SIGNING_ALLOWED=No
-fi
+xcodebuild build-for-testing \
+  -project "${APP_PATH}.xcodeproj" \
+  -scheme Benchmark \
+  -destination platform="iOS" \
+  -allowProvisioningUpdates \
+  DEVELOPMENT_TEAM=78E7V7QP35 \
+  CODE_SIGN_STYLE=Manual \
+  PROVISIONING_PROFILE_SPECIFIER="ExecuTorch Benchmark" \
+  CODE_SIGN_IDENTITY="iPhone Distribution" \
+  CODE_SIGNING_REQUIRED=No \
+  CODE_SIGNING_ALLOWED=No
 
 # The hack to figure out where the xctest package locates
 BUILD_DIR=$(xcodebuild -showBuildSettings -project "$APP_PATH.xcodeproj" -json | jq -r ".[0].buildSettings.BUILD_DIR")
@@ -50,7 +33,7 @@ PLATFORM="iphoneos"
 pushd "${BUILD_DIR}/${MODE}-${PLATFORM}"
 
 rm -rf Payload && mkdir Payload
-APP_NAME=LLaMAPerfBenchmark
+APP_NAME=Benchmark
 
 ls -lah
 cp -r "${APP_NAME}.app" Payload && zip -vr "${APP_NAME}.ipa" Payload
