@@ -260,9 +260,6 @@ jobs:
         PYTHON_EXECUTABLE=python ${CONDA_RUN} --no-capture-output \
           build/build_apple_frameworks.sh --coreml --custom --mps --optimized --portable --quantized --xnnpack
 
-        # DEBUG
-        ls -lah cmake-out
-
         mkdir -p extension/apple/Benchmark/Frameworks
         for FRAMEWORK in "${FRAMEWORKS[@]}"; do (
           cp -r "cmake-out/${FRAMEWORK}.xcframework" extension/apple/Benchmark/Frameworks/
